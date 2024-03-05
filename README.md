@@ -84,12 +84,7 @@ For an explanation of how EIP-155 or EIP-1559 transactions can be signed using A
 This repository represents a PoC of how Ethereum accounts (private/public key) can be hosted on AWS KMS-CMK and how AWS
 KMS can be used to create valid offline signatures on Ethereum transactions.
 
-In this simple example, a transaction is created to send some Ether from one Ethereum account to another. For testing
-purposes it is recommended to use Ethereum Rinkeby (`https://www.rinkeby.io`) network for example and to create an
-account via Metamask.
-
-To bootstrap the AWS KMS-CMK based Ethereum account, the Rinkeby crypto faucet can be
-used (https://www.rinkeby.io/#faucet).
+In this simple example, a transaction is created to send some Ether from one Ethereum account to another.
 
 ---------------------
 
