@@ -28,27 +28,22 @@ SECP256_K1_N = int("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd036
 
 class EthKmsParams:
 
-    def __init__(self, kms_key_id: str, eth_network: str):
+    def __init__(self, kms_key_id: str):
         self._kms_key_id = kms_key_id
-        self._eth_network = eth_network
 
     def get_kms_key_id(self) -> str:
         return self._kms_key_id
 
 
 def get_params() -> EthKmsParams:
-    for param in ['KMS_KEY_ID', 'ETH_NETWORK']:
+    for param in ['KMS_KEY_ID']:
         value = os.getenv(param)
 
         if not value:
-            if param in ['ETH_NETWORK']:
-                continue
-            else:
-                raise ValueError('missing value for parameter: {}'.format(param))
+            raise ValueError('missing value for parameter: {}'.format(param))
 
     return EthKmsParams(
         kms_key_id=os.getenv('KMS_KEY_ID'),
-        eth_network=os.getenv('ETH_NETWORK')
     )
 
 
@@ -135,27 +130,14 @@ def find_eth_signature(params: EthKmsParams, plaintext: bytes) -> dict:
 
 
 def get_recovery_id(msg_hash: bytes, r: int, s: int, eth_checksum_addr: str) -> dict:
-    for v in [27, 28]:
+    for idx, v in enumerate([27, 28]):
         recovered_addr = Account.recoverHash(message_hash=msg_hash,
                                              vrs=(v, r, s))
 
         if recovered_addr == eth_checksum_addr:
-            return {'recovered_addr': recovered_addr, 'v': v}
+            return {'recovered_addr': recovered_addr, 'v': idx}
 
     return {}
-
-
-def get_tx_params(dst_eth_addr: str, amount: int, nonce: int) -> dict:
-    transaction = {
-        'nonce': nonce,
-        'to': dst_eth_addr,
-        'value': w3.toWei(amount, 'ether'),
-        'data': '0x00',
-        'gas': 160000,
-        'gasPrice': '0x0918400000'
-    }
-
-    return transaction
 
 
 def assemble_tx(tx_params: dict, params: EthKmsParams, eth_checksum_addr: str) -> bytes:
