@@ -129,13 +129,15 @@ def find_eth_signature(params: EthKmsParams, plaintext: bytes) -> dict:
     return {'r': r, 's': s}
 
 
-def get_recovery_id(msg_hash: bytes, r: int, s: int, eth_checksum_addr: str) -> dict:
-    for idx, v in enumerate([27, 28]):
+def get_recovery_id(msg_hash: bytes, r: int, s: int, eth_checksum_addr: str, chain_id: int) -> dict:
+    v_lower = chain_id * 2 + 35
+    v_range = [v_lower, v_lower + 1]
+
+    for v in v_range:
         recovered_addr = Account.recoverHash(message_hash=msg_hash,
                                              vrs=(v, r, s))
-
         if recovered_addr == eth_checksum_addr:
-            return {'recovered_addr': recovered_addr, 'v': idx}
+            return {'recovered_addr': recovered_addr, "y_parity": v - v_lower}
 
     return {}
 
@@ -150,9 +152,10 @@ def assemble_tx(tx_params: dict, params: EthKmsParams, eth_checksum_addr: str) -
     tx_eth_recovered_pub_addr = get_recovery_id(msg_hash=tx_hash,
                                                 r=tx_sig['r'],
                                                 s=tx_sig['s'],
-                                                eth_checksum_addr=eth_checksum_addr)
+                                                eth_checksum_addr=eth_checksum_addr,
+                                                chain_id=tx_params["chainId"])
 
     tx_encoded = encode_transaction(unsigned_transaction=tx_unsigned,
-                                    vrs=(tx_eth_recovered_pub_addr['v'], tx_sig['r'], tx_sig['s']))
+                                    vrs=(tx_eth_recovered_pub_addr['y_parity'], tx_sig['r'], tx_sig['s']))
 
     return w3.toHex(tx_encoded)
