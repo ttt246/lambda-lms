@@ -17,7 +17,7 @@ _logger = logging.getLogger()
 _logger.setLevel(LOG_LEVEL)
 
 
-def lambda_handler(event, context):
+def lambda_handler(event, _):
     _logger.debug("incoming event: {}".format(event))
 
     try:
@@ -39,6 +39,17 @@ def lambda_handler(event, context):
 
     elif operation == "sign_bulk_payout":
         del event["operation"]
+
+        # cast to integer as JS sends strings for maxFeePerGas, maxPriorityFeePerGas, gas fields
+        if type(event["maxFeePerGas"]) is str:
+            event["maxFeePerGas"] = int(event["maxFeePerGas"])
+
+        if type(event["maxPriorityFeePerGas"]) is str:
+            event["maxPriorityFeePerGas"] = int(event["maxPriorityFeePerGas"])
+
+        if type(event["gas"]) is str:
+            event["gas"] = int(event["gas"])
+
         # download public key from KMS
         pub_key = get_kms_public_key(key_id)
 
