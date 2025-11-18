@@ -37,7 +37,7 @@ def lambda_handler(event, _):
 
         return {'eth_checksum_address': eth_checksum_address}
 
-    elif operation in ("sign_bulk_payout", "store_results"):
+    elif operation in ("sign_bulk_payout", "store_results", "sign_cancel"):
         del event["operation"]
 
         # cast to integer as JS sends strings for maxFeePerGas, maxPriorityFeePerGas, gas fields
